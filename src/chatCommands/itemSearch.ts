@@ -88,25 +88,29 @@ export const itemSearchCommand: ChatCommandData = {
             const inputLevel: number = Number(
                 itemNameToSearchFor.slice(operatorMatch.index! + usedOperator.length).trim()
             );
-            if (!Number.isInteger(inputLevel)) {
-                await channel.send(
-                    'Either the number you entered is not a valid integer, or the operator you used is invalid.'
-                );
-                return;
+            if (Number.isInteger(inputLevel)) {
+                if (['=', '==', '===', '<', '<=', '=<', '/'].includes(usedOperator)) {
+                    maxLevel = inputLevel;
+                    if (usedOperator === '<') maxLevel -= 1;
+                }
+                if (['=', '==', '===', '>', '>=', '=>'].includes(usedOperator)) {
+                    minLevel = inputLevel;
+                    if (usedOperator === '>') minLevel += 1;
+                }
+                itemNameToSearchFor = itemNameToSearchFor.slice(0, operatorMatch.index).trim();
+            } else {
+                // The / character can be used in some item names such as Baltael's Aventail
+                if (usedOperator !== '/') {
+                    await channel.send(
+                        `The number you entered after \`${usedOperator}\` is not a valid integer.`
+                    );
+                    return;   
+                }
             }
-            if (['=', '==', '===', '<', '<=', '=<', '/'].includes(usedOperator)) {
-                maxLevel = inputLevel;
-                if (usedOperator === '<') maxLevel -= 1;
-            }
-            if (['=', '==', '===', '>', '>=', '=>'].includes(usedOperator)) {
-                minLevel = inputLevel;
-                if (usedOperator === '>') minLevel += 1;
-            }
-            itemNameToSearchFor = itemNameToSearchFor.slice(0, operatorMatch.index).trim();
         }
 
         if (!itemNameToSearchFor) {
-            await channel.send('The search query cannot be blank');
+            await channel.send("You haven't entered anything to search for.");
             return;
         }
 
